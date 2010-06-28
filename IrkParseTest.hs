@@ -53,3 +53,4 @@ main = do
     testExpression ircpHostname "alpha.beta.gamma"
     testExpression ircpHostname "alpha.beta.gamma!"
     testExpression hostnames "alpha.beta.gamma.delta:hel13"
+    testExpression ircpMessage "NOTICE AUTH :*** Looking up your hostname\r"

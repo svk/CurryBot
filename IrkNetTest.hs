@@ -9,7 +9,7 @@ botNick :: String
 botNick = "hsBot__42"
 
 handlers :: [ IrkNet.IrkHandler ]
-handlers = [ IrkNet.handlerShow ]
+handlers = [ IrkNet.handlerShow, IrkNet.handlerIrcShow ]
 
 main :: IO()
 main = Net.withSocketsDo $ do

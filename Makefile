@@ -7,3 +7,9 @@ clean:
 
 NetworkTest:
 	ghc $(GHCFLAGS) --make $@
+
+IrkNetTest:
+	ghc $(GHCFLAGS) --make $@
+
+IrkParseTest:
+	ghc $(GHCFLAGS) --make $@

@@ -1,5 +1,7 @@
 module IrkNet where
 
+import qualified IrkParse
+
 import qualified System.IO as SysIO
 import qualified System.IO.Error as SysIOErr
 
@@ -36,7 +38,7 @@ handleIrcServer h handlers = do
 applyHandlers :: [IrkHandler] -> String -> IO [String]
 applyHandlers (f:fs) s = do
                             IrkTrigger ls c <- f s
-                            if c then
+                            if not c then
                                 return ls
                                 else do
                                     ls' <- applyHandlers fs s
@@ -50,3 +52,7 @@ handlerEcho s = return $ IrkTrigger [s] False
 handlerShow :: IrkHandler
 handlerShow s = do putStrLn $ "Input: " ++ (show s)
                    return $ IrkTrigger [] True
+
+handlerIrcShow :: IrkHandler
+handlerIrcShow s = do putStrLn $ show $ IrkParse.irkParse IrkParse.ircpMessage s
+                      return $ IrkTrigger [] True

@@ -1,5 +1,7 @@
 module IrkParse where
 
+import Maybe
+
 -- This is basically reinventing Parsec to learn how it works
 
 -- Note that this does backtrack by default unlike Parsec
@@ -90,8 +92,6 @@ ipMany1 (IrkParser p) = IrkParser g
             Just (x, st') -> let Just (xs, st'') = f st'
                              in Just ((x:xs), st'')
 
-
-
 ipSkipMany :: (IrkParser a) -> IrkParser ()
 ipSkipMany x = (ipMany x) >> return ()
 
@@ -103,6 +103,18 @@ data IrcPrefix = IrcPrefix { prefixName :: Maybe String,
                              prefixHost :: Maybe String }
 data IrcCommand = IrcCommand String
                   | IrcNumericReply Int
+
+instance Show IrcMessage where
+    show (IrcMessage Nothing cmd pms) = ("(IrcMessage: " ++ show cmd ++ " " ++ show pms ++ ")")
+    show (IrcMessage (Just pfx) cmd pms) = ("(IrcMessage: " ++ show pfx ++ " " ++ show cmd ++ " " ++ show pms ++ ")")
+
+instance Show IrcPrefix where
+    show x = show $ map (\(Just y) -> y) (filter isJust [ prefixName x, prefixUser x, prefixHost x ])
+
+instance Show IrcCommand where
+    show (IrcCommand s) = s
+    show (IrcNumericReply n) = show n
+
 
 ircpMessage :: IrkParser IrcMessage
 ircpMessage = do
