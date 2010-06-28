@@ -1,6 +1,6 @@
 module IrkParse where
 
-import Maybe
+import IrkIRC
 
 -- This is basically reinventing Parsec to learn how it works
 
@@ -96,25 +96,6 @@ ipSkipMany :: (IrkParser a) -> IrkParser ()
 ipSkipMany x = (ipMany x) >> return ()
 
 -- Now, parsers specifically for the IRC protocol (e.g. RFC 1459)
-
-data IrcMessage = IrcMessage (Maybe IrcPrefix) IrcCommand [String]
-data IrcPrefix = IrcPrefix { prefixName :: Maybe String,
-                             prefixUser :: Maybe String,
-                             prefixHost :: Maybe String }
-data IrcCommand = IrcCommand String
-                  | IrcNumericReply Int
-
-instance Show IrcMessage where
-    show (IrcMessage Nothing cmd pms) = ("(IrcMessage: " ++ show cmd ++ " " ++ show pms ++ ")")
-    show (IrcMessage (Just pfx) cmd pms) = ("(IrcMessage: " ++ show pfx ++ " " ++ show cmd ++ " " ++ show pms ++ ")")
-
-instance Show IrcPrefix where
-    show x = show $ map (\(Just y) -> y) (filter isJust [ prefixName x, prefixUser x, prefixHost x ])
-
-instance Show IrcCommand where
-    show (IrcCommand s) = s
-    show (IrcNumericReply n) = show n
-
 
 ircpMessage :: IrkParser IrcMessage
 ircpMessage = do

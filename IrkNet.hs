@@ -2,11 +2,13 @@ module IrkNet where
 
 import qualified IrkParse
 
+import IrkIRC
+
 import qualified System.IO as SysIO
 import qualified System.IO.Error as SysIOErr
 
 data IrkTrigger = IrkTrigger [String] Bool
-type IrkHandler = (String -> IO IrkTrigger)
+type IrkHandler = (IrcMessage -> IO IrkTrigger)
 
 writeLine :: SysIO.Handle -> String -> IO()
 writeLine h s = do
@@ -31,11 +33,17 @@ handleIrcServer h handlers = do
     case v of
         Left _ -> return ()
         Right s -> do
-                        replies <- applyHandlers handlers s
-                        writeLinesEcho h replies
-                        handleIrcServer h handlers
+                        putStrLn $ "Input: " ++ s
+                        case (IrkParse.irkParse IrkParse.ircpMessage s) of
+                            Nothing -> do
+                                    putStrLn $ "Warning: no parse -- \"" ++ s ++ "\""
+                                    handleIrcServer h handlers
+                            Just msg -> do
+                                    replies <- applyHandlers handlers msg
+                                    writeLinesEcho h replies
+                                    handleIrcServer h handlers
 
-applyHandlers :: [IrkHandler] -> String -> IO [String]
+applyHandlers :: [IrkHandler] -> IrcMessage -> IO [String]
 applyHandlers (f:fs) s = do
                             IrkTrigger ls c <- f s
                             if not c then
@@ -45,14 +53,16 @@ applyHandlers (f:fs) s = do
                                     return $ ls ++ ls'
 applyHandlers [] _ = return []
 
--- Handlers for testing
-handlerEcho :: IrkHandler
-handlerEcho s = return $ IrkTrigger [s] False
-
-handlerShow :: IrkHandler
-handlerShow s = do putStrLn $ "Input: " ++ (show s)
-                   return $ IrkTrigger [] True
+-- Handlers (some are just for testing)
+ignoreHandler :: IrkHandler
+ignoreHandler _ = return $ IrkTrigger [] True
 
 handlerIrcShow :: IrkHandler
-handlerIrcShow s = do putStrLn $ show $ IrkParse.irkParse IrkParse.ircpMessage s
-                      return $ IrkTrigger [] True
+handlerIrcShow msg@(IrcMessage _ _ _) =
+    do putStrLn $ show $ msg
+       return $ IrkTrigger [] True
+
+pingHandler :: IrkHandler
+pingHandler (IrcMessage _ (IrcCommand "PING") pms) =
+    return $ IrkTrigger [ formatMessage $ (IrcMessage Nothing (IrcCommand "PONG") pms) ] False
+pingHandler x = ignoreHandler x

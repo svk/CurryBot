@@ -3,13 +3,13 @@ import qualified IrkNet
 import qualified System.IO as SysIO
 
 botRealname :: String
-botRealname = "hsBot"
+botRealname = "hsbot"
 
 botNick :: String
 botNick = "hsBot__42"
 
 handlers :: [ IrkNet.IrkHandler ]
-handlers = [ IrkNet.handlerShow, IrkNet.handlerIrcShow ]
+handlers = [ IrkNet.handlerIrcShow, IrkNet.pingHandler ]
 
 main :: IO()
 main = Net.withSocketsDo $ do

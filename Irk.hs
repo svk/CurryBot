@@ -6,3 +6,5 @@ import qualified System.IO.Error as SysIOErr
 
 import qualified IrkNet
 import qualified IrkParse
+import IrkIRC
+
