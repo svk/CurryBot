@@ -124,6 +124,10 @@ ircpNumberPred a | a >= '0' && a <= '9' = True
 ircpAlphaNumericPred :: Char -> Bool
 ircpAlphaNumericPred x = (ircpLetterPred x) || (ircpNumberPred x)
 
+ircpAlphaNumericUnderscorePred :: Char -> Bool
+ircpAlphaNumericUnderscorePred x = (ircpLetterPred x) || (ircpNumberPred x) || (x == '_')
+
+
 ircpCommand :: IrkParser IrcCommand
 ircpCommand = do
                 name <- ipMany1 (ipChar ircpLetterPred)
@@ -137,7 +141,7 @@ ircpCommand = do
 ircpNick :: IrkParser String
 ircpNick = do
                 fl <- ipChar ircpLetterPred
-                ml <- ipMany (ipChar ircpAlphaNumericPred)
+                ml <- ipMany (ipChar ircpAlphaNumericUnderscorePred)
                 return (fl:ml)
 
 ircpPrefix :: IrkParser IrcPrefix
@@ -187,12 +191,12 @@ ircpSpaces = do ipSkipMany (ipSymbol ' ')
 -- (Actually, see a newer RFC, IPv6 and all that.)
 ircpHostname :: IrkParser String
 ircpHostname = do
-                name <- ipMany1 (ipChar ircpAlphaNumericPred)
+                name <- ipMany1 (ipChar ircpAlphaNumericUnderscorePred)
                 ipSymbol '.'
                 rest <- ircpHostname
                 return (name ++ "." ++ rest)
                <|> do
-                name <- ipMany1 (ipChar ircpAlphaNumericPred)
+                name <- ipMany1 (ipChar ircpAlphaNumericUnderscorePred)
                 return name
 
 -- This is also "faking it"? Surely it can't just be "nonwhite";
