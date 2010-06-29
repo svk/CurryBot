@@ -124,8 +124,8 @@ ircpNumberPred a | a >= '0' && a <= '9' = True
 ircpAlphaNumericPred :: Char -> Bool
 ircpAlphaNumericPred x = (ircpLetterPred x) || (ircpNumberPred x)
 
-ircpAlphaNumericUnderscorePred :: Char -> Bool
-ircpAlphaNumericUnderscorePred x = (ircpLetterPred x) || (ircpNumberPred x) || (x == '_')
+ircpAlphaNumericExtendedPred :: Char -> Bool
+ircpAlphaNumericExtendedPred x = (ircpLetterPred x) || (ircpNumberPred x) || (x == '_') || (x == '~')
 
 
 ircpCommand :: IrkParser IrcCommand
@@ -141,16 +141,20 @@ ircpCommand = do
 ircpNick :: IrkParser String
 ircpNick = do
                 fl <- ipChar ircpLetterPred
-                ml <- ipMany (ipChar ircpAlphaNumericUnderscorePred)
+                ml <- ipMany (ipChar ircpAlphaNumericExtendedPred)
                 return (fl:ml)
 
 ircpPrefix :: IrkParser IrcPrefix
 ircpPrefix = do
                 name <- ircpPrefixName
                 user <- do ipSymbol '!'
+                           ipSymbol '~'
                            username <- ircpPrefixUser
                            return (Just username)
-                           <|> return Nothing
+                        <|> do ipSymbol '!'
+                               username <- ircpPrefixUser
+                               return (Just username)
+                        <|> return Nothing
                 host <- do ipSymbol '@'
                            hostname <- ircpHostname
                            return (Just hostname)
@@ -191,12 +195,12 @@ ircpSpaces = do ipSkipMany (ipSymbol ' ')
 -- (Actually, see a newer RFC, IPv6 and all that.)
 ircpHostname :: IrkParser String
 ircpHostname = do
-                name <- ipMany1 (ipChar ircpAlphaNumericUnderscorePred)
+                name <- ipMany1 (ipChar ircpAlphaNumericExtendedPred)
                 ipSymbol '.'
                 rest <- ircpHostname
                 return (name ++ "." ++ rest)
                <|> do
-                name <- ipMany1 (ipChar ircpAlphaNumericUnderscorePred)
+                name <- ipMany1 (ipChar ircpAlphaNumericExtendedPred)
                 return name
 
 -- This is also "faking it"? Surely it can't just be "nonwhite";
